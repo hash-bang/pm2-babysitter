@@ -19,5 +19,14 @@ app.get('/leak', function (req, res) {
 	// NOTE: Intentional process leak - this will never call any of the res.send() callbacks
 });
 
+app.get('/json', function(req, res) {
+	res.send({
+		time: Date.now(),
+		foo: 1,
+		bar: 20,
+		baz: 30,
+	});
+});
+
 
 var server = app.listen(port, host);

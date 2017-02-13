@@ -28,13 +28,15 @@ function Babysitter() {
 					if (err) return cb(err);
 					if (res.statusCode != 200) return cb('Status Code = ' + res.statusCode);
 					if (strings) {
-						cb(_.castArray(strings).find(function(validator) {
+						var failed = _.castArray(strings).find(function(validator) {
 							if (_.isString(validator)) {
-								return (! (res.body.indexOf(validator) === false));
+								return (res.text.indexOf(validator) === false);
 							} else if (_.isRegExp(validator)) {
-								return (! validator.test(res.body));
+								return (! validator.test(res.text));
 							}
-						} ? 'Failed to find required string: "' + failed + '"' : null));
+						});
+
+						cb(failed ? 'Failed to find required string: "' + failed + '"' : null);
 					} else {
 						cb();
 					}

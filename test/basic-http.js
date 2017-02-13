@@ -25,7 +25,8 @@ describe('PM2-Babysitter: Basic HTTP test', function() {
 	});
 
 
-	it.only('should monitor the web process using the shorthand add method (GET /)', function(done) {
+	// Shorthand method {{{
+	it('should monitor the web process using the shorthand add method (GET /)', function(done) {
 		var status = [];
 
 		babysitter
@@ -47,12 +48,45 @@ describe('PM2-Babysitter: Basic HTTP test', function() {
 			.on('check', (id, state) => status.push({id: id, state: state}))
 			.add('web', 'http://localhost:8080/fail')
 			.cycle(function() {
-				console.log('STATUS', status);
 				expect(status).to.be.deep.equal([
 					{id: 'web', state: false},
 				]);
 				done();
 			})
 	});
+	// }}}
 
+	// Longhand method {{{
+	it('should monitor the web process using the longhand method', function(done) {
+		var status = [];
+
+		babysitter
+			.on('check', (id, state) => status.push({id: id, state: state}))
+			.add('web', [
+				babysitter.rules.get('http://localhost:8080', 'Hello World'),
+			])
+			.cycle(function() {
+				expect(status).to.be.deep.equal([
+					{id: 'web', state: true},
+				]);
+				done();
+			})
+	});
+
+	it('should monitor the web process using the longhand method (and fail on a wrong RegExp)', function(done) {
+		var status = [];
+
+		babysitter
+			.on('check', (id, state) => status.push({id: id, state: state}))
+			.add('web', [
+				babysitter.rules.get('http://localhost:8080', /NOPE/),
+			])
+			.cycle(function() {
+				expect(status).to.be.deep.equal([
+					{id: 'web', state: false},
+				]);
+				done();
+			})
+	});
+	// }}}
 });
