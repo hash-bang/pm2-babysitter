@@ -1,0 +1,34 @@
+{
+  "name": "pm2-babysitter",
+  "version": "0.0.0",
+  "description": "Oversight to PM2 which will reboot servers based on a ruleset",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hash-bang/pm2-babysitter"
+  },
+  "homepage": "https://github.com/hash-bang/pm2-babysitter",
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "Matt Carter <m@ttcarter.com>",
+  "license": "MIT",
+  "keywords": [
+    "pm2",
+    "monitoring",
+    "monitor",
+    "babysitter",
+    "sitter"
+  ],
+  "dependencies": {
+    "async-chainable": "^2.2.3",
+    "lodash": "^4.17.4",
+    "node-ipc": "^8.10.2",
+    "pm2": "^2.4.0"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "express": "^4.14.1",
+    "mocha": "^3.2.0"
+  }
+}
