@@ -11,5 +11,13 @@ var app = express();
 
 app.get('/', (req, res) => res.send('Hello World'));
 
+app.get('/fail', function(req, res) {
+	res.status(500).send('Fail!');
+});
+
+app.get('/leak', function (req, res) {
+	// NOTE: Intentional process leak - this will never call any of the res.send() callbacks
+});
+
 
 var server = app.listen(port, host);

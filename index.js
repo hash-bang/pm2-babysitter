@@ -93,6 +93,16 @@ function Babysitter() {
 	};
 
 
+	/**
+	* Remove all watchers
+	* @return {Babysitter} This chainable object
+	*/
+	babysitter.clear = function() {
+		babysitter.watches = [];
+		return babysitter;
+	};
+
+
 	// .cycle() functionality {{{
 	/**
 	* Perform one cycle check
@@ -106,13 +116,16 @@ function Babysitter() {
 
 		async()
 			.forEach(babysitter.watches, function(nextWatcher, watcher) {
-				var state = true;
 				async()
 					.forEach(watcher.ruleset, function(next, rule) {
 						rule(next);
 					})
 					.end(function(err) {
-						babysitter.emit('check', watcher.id, state);
+						if (err) {
+							babysitter.emit('check', watcher.id, false);
+						} else {
+							babysitter.emit('check', watcher.id, true);
+						}
 						nextWatcher();
 					});
 			})
