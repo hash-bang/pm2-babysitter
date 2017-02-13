@@ -2,6 +2,11 @@ PM2-Babysitter
 ==============
 Oversight to PM2 which will reboot servers based on a ruleset.
 
+In its simplest form this module will ensure that primary processes will be rebooted when they stop responding.
+
+In a more complex form: an advanced ruleset can be defined to restart a PM2 process structure if something goes horribly wrong.
+
+
 ```javascript
 var babysitter = require('pm2-babysitter');
 
