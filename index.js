@@ -21,12 +21,15 @@ function Babysitter() {
 		* Will probe a given URL and optionally check against a string, RegExp or arrays of the same
 		* @param {string} url The URL to probe
 		* @param {string|regexp|array} A single string, RegExp or arrays of teh same that must be satisfied
+		* @param {number} [timeout=5000] Timeout in ms before giving up
 		* @return {function} The validator function
 		*/
-		get: (url, strings) => cb =>
+		get: (url, strings, timeout) => cb =>
 			superagent.get(url)
+				.timeout({deadline: timeout || 5000})
 				.end(function(err, res) {
 					if (err) return cb(err);
+					if (err && err.timeout) return cb('Timed out');
 					if (res.statusCode != 200) return cb('Status Code = ' + res.statusCode);
 					if (strings) {
 						async()
