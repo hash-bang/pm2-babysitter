@@ -22,6 +22,8 @@
   ],
   "dependencies": {
     "async-chainable": "^2.2.3",
+    "async-chainable-flush": "^1.0.0",
+    "commander": "^2.9.0",
     "lodash": "^4.17.4",
     "node-ipc": "^8.10.2",
     "pm2": "^2.4.0"
