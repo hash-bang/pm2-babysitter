@@ -103,6 +103,7 @@ function Babysitter() {
 	*/
 	babysitter.clear = function() {
 		babysitter.watches = [];
+		babysitter.removeAllListeners();
 		return babysitter;
 	};
 
