@@ -24,10 +24,18 @@ function Babysitter() {
 		* @param {number} [timeout=5000] Timeout in ms before giving up
 		* @return {function} The validator function
 		*/
-		get: (url, strings, timeout) => cb =>
+		get: (url, strings, timeout) => function(cb) {
+			var hasTimedout = false;
+			var timeoutHandler = setTimeout(function() {
+				hasTimedout = true;
+				cb('Timed out');
+			}, timeout || 5000);
+
 			superagent.get(url)
-				.timeout({deadline: timeout || 5000})
+				.timeout(timeout || 5000)
 				.end(function(err, res) {
+					if (hasTimedout) return;
+					clearTimeout(timeoutHandler);
 					if (err) return cb(err);
 					if (err && err.timeout) return cb('Timed out');
 					if (res.statusCode != 200) return cb('Status Code = ' + res.statusCode);
@@ -46,7 +54,8 @@ function Babysitter() {
 					} else {
 						cb();
 					}
-				}),
+				});
+		},
 	};
 	// }}}
 
