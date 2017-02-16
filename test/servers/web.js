@@ -15,6 +15,20 @@ app.get('/fail', function(req, res) {
 	res.status(500).send('Fail!');
 });
 
+app.get('/random-fail', function(req, res) {
+	var diceRoll = Math.ceil(Math.random() * 10);
+	if (diceRoll == 7 || diceRoll == 8) { // Err with 500 (2/10 chance)
+		console.log('Respond with 500');
+		res.status(500).send('Random Fail!');
+	} else if (diceRoll == 9) { // Timeout due to thread leak (1/10 chance)
+		console.log('Thread leak!');
+		// Do nothing
+	} else { // Respond without issue (3/10 chance)
+		console.log('Respond with 200');
+		res.send('OK!');
+	}
+});
+
 app.get('/leak', function (req, res) {
 	// NOTE: Intentional process leak - this will never call any of the res.send() callbacks
 });
