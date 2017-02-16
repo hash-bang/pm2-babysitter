@@ -21,7 +21,7 @@ describe('PM2-Babysitter: Basic HTTP test', function() {
 
 	afterEach(function(done) {
 		babysitter.clear();
-		pm2.stop('web', done);
+		pm2.delete('web', done);
 	});
 
 
