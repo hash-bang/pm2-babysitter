@@ -1,6 +1,7 @@
 var _ = require('lodash');
 var async = require('async-chainable');
 var events = require('events');
+var pm2 = require('pm2');
 var superagent = require('/media/LinuxSSD/Projects/CREBP-SRA2/node_modules/superagent');
 var util = require('util');
 
@@ -76,18 +77,20 @@ function Babysitter() {
 	* Add a watch rule
 	* @param {string|array} process The PM2 process name(s) to reboot if the ruleset fails
 	* @param {function|array|string} ruleset Either single callback function or an array of callbacks, all of which must validate to satisfy the watcher. If this is a string the form `babysitter.rules.get(STRING)` is assumed as a shorthand
+	* @param {string} [action="restart"] Action to take if any rule fails. ENUM: 'none', 'restart'
 	* @emits add Fired with the new watch rule added
 	* @return {Babysitter} This chainable object
 	*/
-	babysitter.add = function(process, ruleset) {
+	babysitter.add = function(process, ruleset, action) {
 		if (_.isString(ruleset)) // Mutate ruleset into the shorthand style if passed a string
 			ruleset = babysitter.rules.get(ruleset);
 
 		var newWatcher = {
-			processes: _.castArray(process),
+			apps: _.castArray(process),
 			ruleset: _.castArray(ruleset),
+			action: action || 'restart',
 		};
-		newWatcher.id = newWatcher.processes.length == 1 ? newWatcher.processes[0] : 'babysitter-' + babysitter.nextId++;
+		newWatcher.id = newWatcher.apps.length == 1 ? newWatcher.apps[0] : 'babysitter-' + babysitter.nextId++;
 
 		babysitter.watches.push(newWatcher);
 
@@ -127,14 +130,46 @@ function Babysitter() {
 					})
 					.end(function(err) {
 						if (err) {
-							babysitter.emit('check', watcher.id, false);
+							babysitter.wakeChild(nextWatcher, watcher);
 						} else {
 							babysitter.emit('check', watcher.id, true);
+							nextWatcher();
 						}
-						nextWatcher();
 					});
 			})
 			.end(cb);
+	};
+
+
+	/**
+	* Performs whatever action is configured against a watcher if any of the rules fail
+	* @emits error Any error message that could occur (e.g. by telling PM2 to restart the app)
+	*/
+	babysitter.wakeChild = function(cb, watcher) {
+		switch (watcher.action) {
+			case 'none': return cb();
+			case 'restart':
+				async()
+					.then(function(next) {
+						babysitter.emit('check', watcher.id, false);
+						babysitter.emit('restart', watcher.id);
+						next();
+					})
+					.then('pm2', function(next) {
+						pm2.connect(next);
+					})
+					.forEach(watcher.apps, function(next, app) {
+						pm2.restart(app, next);
+					})
+					.end(function(err) {
+						if (err) babysitter.emit('error', 'Error rebooting app "' + watcher.apps.join(', ') + '" - ' + err.toString());
+						babysitter.emit('postRestart', watcher.id);
+						cb();
+					});
+				break;
+			default:
+				throw new Error('Unknown watcher action: ' + watcher.action);
+		}
 	};
 	// }}}
 
