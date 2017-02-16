@@ -89,4 +89,43 @@ describe('PM2-Babysitter: Basic HTTP test', function() {
 			})
 	});
 	// }}}
+
+	// JSON validation {{{
+	it('should monitor the web process and validate against JSON', function(done) {
+		var status = [];
+
+		babysitter
+			.on('check', (id, state) => status.push({id: id, state: state}))
+			.add('web', [
+				babysitter.rules.get('http://localhost:8080/json', function(next, res) {
+					expect(res.body).to.have.property('foo', 1);
+					expect(res.body).to.have.property('bar', 'Bar!');
+					expect(res.body).to.have.property('baz', 'BazBazBaz');
+					next();
+				}),
+			])
+			.cycle(function(err) {
+				expect(status).to.be.deep.equal([
+					{id: 'web', state: true},
+				]);
+				done();
+			})
+	});
+
+	it('should monitor the web process and validate against JSON (and fail on a wrong RegExp)', function(done) {
+		var status = [];
+
+		babysitter
+			.on('check', (id, state) => status.push({id: id, state: state}))
+			.add('web', [
+				babysitter.rules.get('http://localhost:8080', /NOPE/),
+			])
+			.cycle(function() {
+				expect(status).to.be.deep.equal([
+					{id: 'web', state: false},
+				]);
+				done();
+			})
+	});
+	// }}}
 });

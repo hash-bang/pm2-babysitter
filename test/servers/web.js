@@ -23,8 +23,8 @@ app.get('/json', function(req, res) {
 	res.send({
 		time: Date.now(),
 		foo: 1,
-		bar: 20,
-		baz: 30,
+		bar: 'Bar!',
+		baz: 'BazBazBaz',
 	});
 });
 

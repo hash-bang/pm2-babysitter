@@ -28,15 +28,17 @@ function Babysitter() {
 					if (err) return cb(err);
 					if (res.statusCode != 200) return cb('Status Code = ' + res.statusCode);
 					if (strings) {
-						var failed = _.castArray(strings).find(function(validator) {
-							if (_.isString(validator)) {
-								return (res.text.indexOf(validator) === false);
-							} else if (_.isRegExp(validator)) {
-								return (! validator.test(res.text));
-							}
-						});
-
-						cb(failed ? 'Failed to find required string: "' + failed + '"' : null);
+						async()
+							.forEach(_.castArray(strings), function(next, validator) {
+								if (_.isFunction(validator)) {
+									validator(next, res);
+								} else if (_.isString(validator)) {
+									next(res.text.indexOf(validator) === false ? 'Failed to find required string: "' + validator + '"' : null);
+								} else if (_.isRegExp(validator)) {
+									next(!validator.test(res.text) ? 'Failed to find required RegExp: "' + validator.toString() + '"' : null);
+								}
+							})
+							.end(cb);
 					} else {
 						cb();
 					}
@@ -108,7 +110,7 @@ function Babysitter() {
 	// .cycle() functionality {{{
 	/**
 	* Perform one cycle check
-	* @param {function} [cb] Optional callback to fire when completed
+	* @param {function} [cb] Optional callback to fire when completed, with any errors that occured
 	* @emits preCycle Indicator that we are about to do a cycle check
 	* @emits check Post check for a a single watcher. Called with the ID and the state (boolean)
 	* @return {Babysitter} This chainable object
