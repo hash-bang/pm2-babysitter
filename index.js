@@ -52,12 +52,12 @@ function Babysitter() {
 	* @see monitor()
 	* @var {number}
 	*/
-	babysitter.frequency = 100;
+	babysitter.frequency = 1000;
 
 
 	/**
 	* Collection of each watch thats installed
-	* Each item should be an object containing: id, processes, ruleset
+	* Each item should be an object containing: id, apps, ruleset
 	* ID will be either the process if there is only one or randomly generated
 	* @var {array}
 	*/
