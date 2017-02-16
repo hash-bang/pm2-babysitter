@@ -131,14 +131,15 @@ describe('PM2-Babysitter: Basic HTTP test', function() {
 
 	// Broken servers {{{
 	it('should correctly respond to a broken server by restarting the app (GET /leak)', function(done) {
+		this.timeout(5 * 1000);
 		var status = [];
 
 		babysitter
-			.on('check', (id, state) => status.push({id: id, state: state}))
-			.add('web', 'http://localhost:8080/leak', null, 1000) // Set timeout to 1s so we're not waiting around
+			.on('check', (id, state, err) => status.push({id: id, state: state, err: err}))
+			.add('web', babysitter.rules.get('http://localhost:8080/leak', null, 1000)) // Set timeout to 1s so we're not waiting around
 			.cycle(function() {
 				expect(status).to.be.deep.equal([
-					{id: 'web', state: false},
+					{id: 'web', state: false, err: 'Timed out'},
 				]);
 				done();
 			})

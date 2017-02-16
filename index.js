@@ -128,7 +128,7 @@ function Babysitter() {
 	* Perform one cycle check
 	* @param {function} [cb] Optional callback to fire when completed, with any errors that occured
 	* @emits preCycle Indicator that we are about to do a cycle check
-	* @emits check Post check for a a single watcher. Called with the ID and the state (boolean)
+	* @emits check Post check for a a single watcher. Called with the ID, the state (boolean) and an optional error message
 	* @return {Babysitter} This chainable object
 	*/
 	babysitter.cycle = function(cb) {
@@ -142,6 +142,7 @@ function Babysitter() {
 					})
 					.end(function(err) {
 						if (err) {
+							babysitter.emit('check', watcher.id, false, err);
 							babysitter.wakeChild(nextWatcher, watcher);
 						} else {
 							babysitter.emit('check', watcher.id, true);
@@ -163,7 +164,6 @@ function Babysitter() {
 			case 'restart':
 				async()
 					.then(function(next) {
-						babysitter.emit('check', watcher.id, false);
 						babysitter.emit('restart', watcher.id);
 						next();
 					})
