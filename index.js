@@ -2,7 +2,7 @@ var _ = require('lodash');
 var async = require('async-chainable');
 var events = require('events');
 var pm2 = require('pm2');
-var superagent = require('/media/LinuxSSD/Projects/CREBP-SRA2/node_modules/superagent');
+var superagent = require('superagent');
 var util = require('util');
 
 function Babysitter() {
