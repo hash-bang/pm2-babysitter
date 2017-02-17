@@ -3,6 +3,9 @@
   "version": "0.0.0",
   "description": "Oversight to PM2 which will reboot servers based on a ruleset",
   "main": "index.js",
+  "bin": {
+    "pm2-babysitter": "./cli.js"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/hash-bang/pm2-babysitter"
