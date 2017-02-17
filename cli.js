@@ -8,10 +8,9 @@ var program = require('commander');
 
 program
 	.version(require('./package.json').version)
-	.usage('[options] [process] -p port1,port2...')
+	.usage('-a <app(s)> -u [url] [options]')
 	.option('-a, --app [apps]', 'The app or apps (seperate with commas) to monitor')
 	.option('-f, --frequency [time in ms]', 'Set the monitoring frequency (default is 1000)')
-	.option('-p, --port [ports]', 'The port or ports (seperate with commas) to verify')
 	.option('-u, --url [url]', 'Install a URL monitoring rule')
 	.option('-v, --verbose', 'Be verbose. Specify multiple times for increasing verbosity', function(i, v) { return v + 1 }, 0)
 	.parse(process.argv);
