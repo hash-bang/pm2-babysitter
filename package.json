@@ -24,18 +24,17 @@
     "sitter"
   ],
   "dependencies": {
-    "async-chainable": "^2.2.3",
+    "async-chainable": "^2.3.2",
     "async-chainable-flush": "^1.0.0",
-    "commander": "^2.9.0",
+    "commander": "^2.11.0",
     "lodash": "^4.17.4",
-    "node-ipc": "^8.10.3",
-    "pm2": "^2.4.0",
-    "superagent": "^3.4.3"
+    "pm2": "^2.6.1",
+    "superagent": "^3.6.0"
   },
   "devDependencies": {
-    "chai": "^3.5.0",
-    "express": "^4.14.1",
-    "mocha": "^3.2.0",
+    "chai": "^4.1.1",
+    "express": "^4.15.4",
+    "mocha": "^3.5.0",
     "mocha-logger": "^1.0.5"
   }
 }
