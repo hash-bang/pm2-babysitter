@@ -90,18 +90,30 @@ function Babysitter() {
 	* @param {string|array} process The PM2 process name(s) to reboot if the ruleset fails
 	* @param {function|array|string} ruleset Either single callback function or an array of callbacks, all of which must validate to satisfy the watcher. If this is a string the form `babysitter.rules.get(STRING)` is assumed as a shorthand
 	* @param {string} [action="restart"] Action to take if any rule fails. ENUM: 'none', 'restart'
+	* @param {Object} [options] Other options to accept
+	* @param {number} [options.restartDelay] How long to wait between restarts
 	* @emits add Fired with the new watch rule added
 	* @return {Babysitter} This chainable object
 	*/
-	babysitter.add = function(process, ruleset, action) {
-		if (_.isString(ruleset)) // Mutate ruleset into the shorthand style if passed a string
+	babysitter.add = function(process, ruleset, action, options) {
+		// Function option mangling {{{
+		if (_.isString(ruleset)) { // Mutate ruleset into the shorthand style if passed a string
 			ruleset = babysitter.rules.get(ruleset);
+		}
+
+		if (_.isObject(action)) { // If action is an object assume its omitted
+			options = action;
+			action = 'restart';
+		}
+		// }}}
 
 		var newWatcher = {
 			apps: _.castArray(process),
 			ruleset: _.castArray(ruleset),
 			action: action || 'restart',
 		};
+		if (_.isObject(options)) _.merge(newWatcher, options); // Merge misc options
+
 		newWatcher.id = newWatcher.apps.length == 1 ? newWatcher.apps[0] : 'babysitter-' + babysitter.nextId++;
 
 		babysitter.watches.push(newWatcher);
@@ -163,18 +175,41 @@ function Babysitter() {
 			case 'none': return cb();
 			case 'restart':
 				async()
+					.then('pm2', function(next) {
+						pm2.connect(next);
+					})
+					// Check for restart delay and abort if its within the tolerence {{{
+					.set('stillRestarting', 0)
+					.forEach(watcher.apps, function(nextApp, app) {
+						if (!watcher.restartDelay) return nextApp(); // No restartDelay specified
+						pm2.describe(app, (err, proc) => {
+							if (err) return nextApp(err);
+							var age = Date.now() - proc[0]['pm2_env']['pm_uptime'];
+							if (age < watcher.restartDelay) this.stillRestarting++;
+							nextApp();
+						});
+					})
+					.then(function(next) {
+						if (this.stillRestarting > 0) {
+							return next('WITHIN-DELAY');
+						} else {
+							next();
+						}
+					})
+					// }}}
 					.then(function(next) {
 						babysitter.emit('restart', watcher.id);
 						next();
-					})
-					.then('pm2', function(next) {
-						pm2.connect(next);
 					})
 					.forEach(watcher.apps, function(next, app) {
 						pm2.restart(app, next);
 					})
 					.end(function(err) {
-						if (err) babysitter.emit('error', 'Error rebooting app "' + watcher.apps.join(', ') + '" - ' + err.toString());
+						if (err && err == 'WITHIN-DELAY') {
+							babysitter.emit('restartDelay', 'App is still rebooting "' + watcher.apps.join(', '));
+						} else if (err) {
+							babysitter.emit('error', 'Error rebooting app "' + watcher.apps.join(', ') + '" - ' + err.toString());
+						}
 						babysitter.emit('postRestart', watcher.id);
 						cb();
 					});

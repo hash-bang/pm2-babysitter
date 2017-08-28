@@ -10,6 +10,7 @@ program
 	.version(require('./package.json').version)
 	.usage('-a <app(s)> -u [url] [options]')
 	.option('-a, --app [apps]', 'The app or apps (seperate with commas) to monitor')
+	.option('-d, --restartDelay [number]', 'Delay any restart operation by this number of MS (useful for slow boot servers')
 	.option('-f, --frequency [time in ms]', 'Set the monitoring frequency (default is 1000)')
 	.option('-u, --url [url]', 'Install a URL monitoring rule')
 	.option('-v, --verbose', 'Be verbose. Specify multiple times for increasing verbosity', (i, v) => v + 1, 0)
@@ -32,6 +33,7 @@ async()
 	// }}}
 	// Setup babysitter rules {{{
 	.then(function(next) {
+		var options = {};
 		if (program.verbose) console.log('Monitor apps [' + program.app.join(',') + ']');
 
 		var rules = [];
@@ -45,9 +47,12 @@ async()
 			);
 		}
 		// }}}
+		// --restartDelay [ms] {{{
+		if (program.restartDelay) options.restartDelay = program.restartDelay;
+		// }}}
 
 		var monitor = babysitter
-			.add(program.app, rules)
+			.add(program.app, rules, options)
 			.on('error', err => console.log('ERROR', err))
 
 		if (program.frequency) monitor.frequency = program.frequency;
