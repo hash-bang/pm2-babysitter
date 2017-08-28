@@ -12,7 +12,7 @@ program
 	.option('-a, --app [apps]', 'The app or apps (seperate with commas) to monitor')
 	.option('-f, --frequency [time in ms]', 'Set the monitoring frequency (default is 1000)')
 	.option('-u, --url [url]', 'Install a URL monitoring rule')
-	.option('-v, --verbose', 'Be verbose. Specify multiple times for increasing verbosity', function(i, v) { return v + 1 }, 0)
+	.option('-v, --verbose', 'Be verbose. Specify multiple times for increasing verbosity', (i, v) => v + 1, 0)
 	.parse(process.argv);
 
 
